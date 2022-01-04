@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+      /* Visit https://aka.ms/tsconfig.json to read more about this file */
+      "target": "es2016",
+      "moduleResolution": "node",
+      "sourceMap": true,
+      "esModuleInterop": true,
+      "strict": true,
+      "forceConsistentCasingInFileNames": true,
+      "skipLibCheck": true,
+    },
+}
+  
