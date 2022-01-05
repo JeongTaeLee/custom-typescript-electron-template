@@ -6,8 +6,8 @@
   "private": true,
   "scripts": {
     "clear": "yarn run rimraf [\"./dist\"]",
-    "copy-renderer-static": "yarn run copyfiles -u 1 \"./proj/renderer/src/**/*.html\" \"./proj/renderer/src/**/*.css\" out \"./dist/renderer\"",
-    "copy-main-assets": "yarn run copyfiles -u 2 \"./proj/main/assets/**/*\" out \"./dist/main/assets\"",
+    "copy-renderer-static": "yarn run copyfiles -u 3 \"./proj/renderer/src/**/*.html\" \"./proj/renderer/src/**/*.css\" out \"./dist/renderer/src\"",
+    "copy-main-assets": "yarn run copyfiles -u 3 \"./proj/main/assets/**/*\" out \"./dist/main/assets\"",
     "compile": "yarn run clear && yarn run copy-main-assets && yarn run copy-renderer-static && yarn run tsc --build \"./proj/main/tsconfig.json\" \"./proj/renderer/tsconfig.json\"",
     "start": "yarn run compile && cross-env DEBUG=true electron ."
   },
