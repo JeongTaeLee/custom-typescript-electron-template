@@ -1,18 +1,17 @@
-import { BrowserWindow, dialog } from "electron"
+import { BrowserWindow, dialog, Menu, MenuItem, Tray } from "electron"
 import SettingManager from "./setting/SettingManager";
 
 export default class MainApp {
-    private readonly width: number = 800;
-    private readonly height: number = 600;
-
     private _mainWindow?: BrowserWindow;
     private _app?: Electron.App;
+    private _tray?: Tray;
+
 
     public start(app: Electron.App) {
         this._app = app;
 
         // 일렉트론을 초기화하고 창을 만들 준비가 되면 호출된다.
-        this._app.on("ready", this.createWindow.bind(this));
+        this._app.on("ready", this.ready.bind(this));
 
         this._app.on("activate", this.activate.bind(this));
 
@@ -21,7 +20,7 @@ export default class MainApp {
         this._app.on("window-all-closed", this.close.bind(this));
     }
 
-    private createWindow(this: MainApp): void {
+    private ready(this: MainApp): void {
         if (!this._app) {
             dialog.showErrorBox("앱을 시작 할 수 없음", `잘못된 앱 입니다.\n`);
             return;
@@ -39,33 +38,39 @@ export default class MainApp {
             return;
         }
 
-        // set window size
-        const windowSetting = SettingManager.get().window;
-        this._mainWindow = new BrowserWindow({
-            width: windowSetting.width,
-            height: windowSetting.height,
+        try {
+            if (!this._tray) {
+                this._tray = this.createContextMenu();
+            }
 
-            webPreferences: {
-                nodeIntegration: true, // 노드 통합?
-            },
-        });
+            this._mainWindow = new BrowserWindow({
+                webPreferences: {
+                    nodeIntegration: true, // 노드 통합?
+                },
+            });
 
-        // set window position
-        this._mainWindow.setPosition(windowSetting.posX, windowSetting.posY, false);
+            this.setWindowBySetting(this._mainWindow);
 
-        // set window event handler
-        this._mainWindow.on("resized", this.resizeMainWindow.bind(this));
-        this._mainWindow.on("moved", this.movedMainWindow.bind(this));
+            // set window event handler
+            this._mainWindow.on("resized", this.resizeMainWindow.bind(this));
+            this._mainWindow.on("moved", this.movedMainWindow.bind(this));
 
-        this._mainWindow.webContents.openDevTools();
-        this._mainWindow.loadFile("./electron-renderer/dist/src/index.html");
+            this._mainWindow.webContents.openDevTools();
+            this._mainWindow.loadFile("./electron-renderer/dist/src/index.html");
+
+        } catch (error) {
+            dialog.showErrorBox("앱을 시작 할 수 없음"
+                , `구성 중 문제가 발생했습니다.\n${error}`);
+
+            this._app.quit();
+        }
     }
 
     private activate(this: MainApp): void {
         if (BrowserWindow.getAllWindows().length == 0) {
             // mac os는 창을 닫아도 프로그램이 종료되지 않는다.
             // Dock에서 앱 아이콘 클릭 시 창이 없으면 창을 새로 만들어준다.
-            this.createWindow();
+            this.ready();
         }
     }
 
@@ -77,41 +82,84 @@ export default class MainApp {
 
         // mac os는 창을 닫아도 앱이 종료되지 않는다.
         // 그러므로 창을 닫았을 때 앱이 종료되면 안된다.
-        if (process.platform !== "darwin") {
-            this._app.quit();
-        }
+        // 트레이 처리 때문에 주석처리
+        // if (process.platform !== "darwin") {
+        //     this._app.quit();
+        // }
+
+        this._app.quit();
+
     }
 
-    // TODO : MainWindow 클래스로 빼기.
     private resizeMainWindow(this: MainApp): void {
-        try {
-            if (this._mainWindow) {
-                const windowSize = this._mainWindow.getSize();
-                const windowPos = this._mainWindow.getPosition();
+        if (!this._mainWindow) {
+            return;
+        }
 
-                SettingManager.get().window.setSize(windowSize[0], windowSize[1]);
-                SettingManager.get().window.setPos(windowPos[0], windowPos[1]);
-                SettingManager.get().save();
-            }
-        }
-        catch (error) {
-            dialog.showErrorBox("오류", `설정 파일을 저장할 수 없습니다.\n${error}`);
-        }
+        const windowSize = this._mainWindow.getSize();
+        const windowPos = this._mainWindow.getPosition();
+
+        SettingManager.get().window.setSize(windowSize[0], windowSize[1]);
+        SettingManager.get().window.setPos(windowPos[0], windowPos[1]);
+
+        this.saveSettingWithErrorBox();
+
     }
 
     private movedMainWindow(this: MainApp): void {
-        // TODO : 창 나갔을 경우 예외 처리.
-        try {
-            if (this._mainWindow) {
-                const windowPos = this._mainWindow.getPosition();
-
-                SettingManager.get().window.setPos(windowPos[0], windowPos[1]);
-                SettingManager.get().save();
-            }
+        if (!this._mainWindow) {
+            return;
         }
-        catch (error) {
+
+        const windowPos = this._mainWindow.getPosition();
+
+        SettingManager.get().window.setPos(windowPos[0], windowPos[1]);
+
+        this.saveSettingWithErrorBox();
+    }
+
+    private saveSettingWithErrorBox(): void {
+        try {
+            SettingManager.get().save();
+        } catch (error) {
             dialog.showErrorBox("오류", `설정 파일을 저장할 수 없습니다.\n${error}`);
         }
     }
 
+    private setWindowBySetting(this: MainApp, targetWindow: BrowserWindow): void {
+        const windowSetting = SettingManager.get().window;
+
+        targetWindow.setSize(windowSetting.width, windowSetting.height);
+        targetWindow.setPosition(windowSetting.posX, windowSetting.posY);
+    }
+
+    private resetWindowSettingAndSave(this: MainApp): void {
+        if (!this._mainWindow) {
+            dialog.showErrorBox("오류", `열린 창을 찾을 수 없습니다.`);
+            return;
+        }
+
+        SettingManager.get().window.reset();
+
+        this.setWindowBySetting(this._mainWindow);
+
+        this.saveSettingWithErrorBox();
+    }
+
+    private createContextMenu(this: MainApp): Tray {
+        const resetWindow = new MenuItem({
+            label: "Reset window size & position",
+            type: "normal",
+            click: () => {
+                this.resetWindowSettingAndSave();
+            }
+        });
+
+        const tray = new Tray("./electron-main/assets/icon-tray16x16.png");
+        tray.setContextMenu(Menu.buildFromTemplate([
+            resetWindow,
+        ]));
+
+        return tray;
+    }
 }

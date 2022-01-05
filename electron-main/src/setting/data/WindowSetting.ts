@@ -78,4 +78,11 @@ export default class WindowSetting extends BaseSetting {
         const parsedPosY = Number.parseInt(jsonObject[this.JSON_POS_Y_KEY]);
         this._posY = parsedPosY ? parsedPosY : this.DEFAULT_POS_Y;
     }
+
+    public reset(): void {
+        this._width = this.DEFAULT_WIDTH;
+        this._height = this.DEFAULT_HEIGHT;
+        this._posX = this.DEFAULT_POS_X;
+        this._posY = this.DEFAULT_POS_Y;
+    }
 }
