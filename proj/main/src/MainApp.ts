@@ -1,3 +1,4 @@
+import path from "path";
 import { BrowserWindow, dialog, Menu, MenuItem, Tray } from "electron"
 import SettingManager from "./setting/SettingManager";
 
@@ -56,7 +57,7 @@ export default class MainApp {
             this._mainWindow.on("moved", this.movedMainWindow.bind(this));
 
             this._mainWindow.webContents.openDevTools();
-            this._mainWindow.loadFile("./electron-renderer/dist/src/index.html");
+            this._mainWindow.loadFile(path.join(__dirname, "../../renderer/src/index.html"));
 
         } catch (error) {
             dialog.showErrorBox("앱을 시작 할 수 없음"
@@ -155,7 +156,7 @@ export default class MainApp {
             }
         });
 
-        const tray = new Tray("./electron-main/assets/icon-tray16x16.png");
+        const tray = new Tray(path.join(__dirname, "../assets/icon-tray16x16.png"));
         tray.setContextMenu(Menu.buildFromTemplate([
             resetWindow,
         ]));
