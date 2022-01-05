@@ -8,7 +8,7 @@
     "clear": "yarn run rimraf \"./electron-main/dist\" \"./electron-renderer/dist\"",
     "copy-renderer-static": "copyfiles -u 1 \"./electron-renderer/src/**/*.html\" \"./electron-renderer/src/**/*.css\" out \"./electron-renderer/dist\"",
     "compile": "yarn run clear && yarn run copy-renderer-static && yarn run tsc --build \"./electron-main/tsconfig.json\" \"./electron-renderer/tsconfig.json\"",
-    "start": "yarn run compile && cross-env DEBUG=true electron . && exit 0"
+    "start": "yarn run compile && cross-env DEBUG=true electron ."
   },
   "devDependencies": {
     "@types/node": "^17.0.7",
