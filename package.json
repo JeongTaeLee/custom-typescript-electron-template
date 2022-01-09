@@ -5,19 +5,31 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "clear": "yarn run rimraf [\"./dist\"]",
-    "copy-renderer-static": "yarn run copyfiles -u 3 \"./proj/renderer/src/**/*.html\" \"./proj/renderer/src/**/*.css\" out \"./dist/renderer/src\"",
-    "copy-main-assets": "yarn run copyfiles -u 3 \"./proj/main/assets/**/*\" out \"./dist/main/assets\"",
-    "compile": "yarn run clear && yarn run copy-main-assets && yarn run copy-renderer-static && yarn run tsc --build \"./proj/main/tsconfig.json\" \"./proj/renderer/tsconfig.json\"",
+    "clear": "rimraf [\"./dist\"]",
+    
+    "compile-main": "tsc --build \"./proj/main/tsconfig.json\"",
+    "compile-renderer": "webpack -c \"./proj/renderer/webpack.config.js\"",
+    "copy-assets": "copyfiles -u 2 \"./proj/assets/**/*\" out \"./dist/assets\"",
+    "compile": "yarn run clear && yarn run compile-main && yarn run compile-renderer && yarn run copy-assets",
+    
     "start": "yarn run compile && cross-env DEBUG=true electron ."
   },
   "devDependencies": {
     "@types/node": "^17.0.7",
+    "@babel/core": "^7.16.7",
+    "@babel/preset-env": "^7.16.7",
+    "typescript": "^4.5.4",
     "copyfiles": "^2.4.1",
+    "rimraf": "^3.0.2",
     "cross-env": "^7.0.3",
     "electron": "^16.0.6",
-    "rimraf": "^3.0.2",
-    "typescript": "^4.5.4"
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1",
+    "html-webpack-plugin": "^5.5.0",
+    "babel-loader": "^8.2.3",
+    "css-loader": "^6.5.1",
+    "style-loader": "^3.3.1",
+    "ts-loader": "^9.2.6"
   },
   "dependencies": {}
 }

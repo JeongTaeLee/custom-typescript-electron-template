@@ -156,7 +156,7 @@ export default class MainApp {
             }
         });
 
-        const tray = new Tray(path.join(__dirname, "../assets/icon-tray16x16.png"));
+        const tray = new Tray(path.join(__dirname, "../../assets/icon-tray16x16.png"));
         tray.setContextMenu(Menu.buildFromTemplate([
             resetWindow,
         ]));
