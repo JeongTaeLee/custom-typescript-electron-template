@@ -41,5 +41,6 @@ module.exports = {
             filename: "src/index.html"
         }),
     ],
-    mode: "development"
+    devtool: "source-map",
+    mode: "development",
 }
